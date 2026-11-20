@@ -1,21 +1,4 @@
-<!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#07151e">
-  <meta name="description" content="从 2025 年 12 月 9 日开始，和你一起，把每一个冬天慢慢点亮。属于我们的互动圣诞夜。">
-  <title>敏，冬日暖阳</title>
-  <link rel="icon" type="image/svg+xml" href="assets/star.svg">
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="navigation.css">
-  <link rel="preload" as="image" href="assets/couple.png">
-  <script src="app.js" defer></script>
-  <script src="gallery.js" defer></script>
-  <script src="navigation.js" defer></script>
-</head>
-<body>
-  <svg class="icon-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#f9e6f1"><link rel="icon" href="assets/star.svg"><script src="theme.js?v=20261121-7"></script><link rel="stylesheet" href="design.css?v=20261121-7"><link rel="stylesheet" href="navigation.css?v=20261121-7"><title>曾❤敏</title><meta name="description" content="曾与敏的共同主页，相恋时光、照片和每一天的故事。"><script src="home.js?v=20261121-7" defer></script><script src="navigation.js?v=20261121-7" defer></script><script src="music.js?v=20261121-7" defer></script></head><body data-page="home">  <svg class="icon-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
     <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 2.8 6.6 7.2.7-5.5 4.7 1.6 7-6.1-3.7L5.9 21l1.6-7L2 9.3l7.2-.7Z"/></symbol>
     <symbol id="i-snow" viewBox="0 0 24 24"><path d="M12 2v20M3.34 7l17.32 10M3.34 17 20.66 7M8 4l4 3 4-3M8 20l4-3 4 3M3 11l4-2-1-5M21 13l-4 2 1 5M6 20l1-5-4-2M18 4l-1 5 4 2"/></symbol>
     <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13M9 9l11-2"/><ellipse cx="5.5" cy="18.5" rx="3.5" ry="2.5"/><ellipse cx="16.5" cy="16.5" rx="3.5" ry="2.5"/></symbol>
@@ -29,40 +12,8 @@
     <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
     <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 4 12 8-12 8Z"/></symbol>
   </defs></svg>
-
-  <main class="night" id="night" aria-label="属于我们的互动圣诞夜">
-    <canvas id="scene" aria-hidden="true"></canvas>
-    <div class="vignette" aria-hidden="true"></div>
-    <h1 class="winter-title" id="title">敏，冬日暖阳</h1>
-    <button class="skip icon-control" id="skip" type="button" aria-label="跳过开场" title="跳过开场"><svg><use href="#i-next"/></svg></button>
-
-    <div class="scene-interactions" id="scene-interactions">
-      <button class="tree-touch" id="tree-touch" type="button" aria-label="轻触圣诞树，点亮一片星光"></button>
-      <button class="tree-star" id="tree-star" type="button" aria-label="点树顶星星，许一个愿"><span class="star-halo" aria-hidden="true"></span><svg><use href="#i-star"/></svg><span class="star-tip">许个愿吧</span></button>
-      <button class="couple" id="couple" type="button" aria-label="轻触牵手的我们，看看相恋时光"><span class="couple-ground" aria-hidden="true"></span><img src="assets/couple.png" alt="从我们的牵手影子中诞生的情侣剪影" width="1024" height="1024"><span class="couple-heart" aria-hidden="true">♡</span></button>
-      <button class="gift gift-memory" data-gift="memory" type="button" aria-label="拆开礼物：牵手的回忆"><span class="gift-bow" aria-hidden="true"></span><span class="gift-lid" aria-hidden="true"></span><span class="gift-box" aria-hidden="true"></span><span class="gift-label">一张回忆</span></button>
-      <button class="gift gift-letter" data-gift="letter" type="button" aria-label="拆开礼物：给你的圣诞信"><span class="gift-bow" aria-hidden="true"></span><span class="gift-lid" aria-hidden="true"></span><span class="gift-box" aria-hidden="true"></span><span class="gift-label">一封小信</span></button>
-      <button class="gift gift-together" data-gift="together" type="button" aria-label="拆开礼物：一起过冬的小约定"><span class="gift-bow" aria-hidden="true"></span><span class="gift-lid" aria-hidden="true"></span><span class="gift-box" aria-hidden="true"></span><span class="gift-label">一个约定</span></button>
-    </div>
-
-    <div class="love-clock" id="love-clock" aria-label="从2025年12月9日起的相恋时光"><div class="clock-digits"><strong id="days">—</strong><span>天</span></div><span class="clock-detail" id="clock-detail"></span></div>
-    <footer class="footer"><nav class="scene-controls" aria-label="场景控制"><button type="button" id="gallery-open" aria-label="打开照相馆" title="照相馆"><svg><use href="#i-camera"/></svg></button><button type="button" id="music" aria-label="开启音乐" aria-pressed="false" title="开启音乐"><svg><use href="#i-music"/></svg></button><button type="button" id="replay" aria-label="重播开场" title="重播开场"><svg><use href="#i-replay"/></svg></button><button type="button" id="help" aria-label="查看玩法" title="玩法"><svg><use href="#i-help"/></svg></button></nav></footer>
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  </main>
-
-  <dialog class="wish-dialog" id="wish-dialog" aria-labelledby="wish-title">
-    <div class="paper"><button class="close-button" type="button" data-close aria-label="关闭许愿纸条"><svg><use href="#i-close"/></svg></button><span class="paper-star" aria-hidden="true">✦</span><p class="paper-kicker">A WISH BETWEEN US</p><h2 id="wish-title">有些心愿，<br>想和你一起实现。</h2><p class="paper-intro">写下来，让这颗星星替你记得。</p>
-    <form id="wish-form"><label class="sr-only" for="wish-text">我的心愿</label><textarea id="wish-text" maxlength="240" rows="4" placeholder="比如，想和你一起看今年的第一场雪……" required></textarea><div class="form-meta"><span>保存在当前设备的浏览器中</span><output id="char-count" for="wish-text">0 / 240</output></div><p class="form-error" id="wish-error" role="alert"></p><button class="paper-submit" type="submit"><svg><use href="#i-star"/></svg>让心愿飞向星星</button></form>
-    <section class="saved-section" aria-labelledby="saved-title"><h3 id="saved-title">星星记得的心愿 <span id="wish-count">0</span></h3><div id="wish-list" class="wish-list"></div></section><p class="storage-note">仅自己可见；换设备、换浏览器或清理网站数据后不会保留。</p></div>
-  </dialog>
-
-  <dialog class="gift-dialog" id="gift-dialog" aria-labelledby="gift-title"><div class="gift-paper"><button class="close-button" type="button" data-close aria-label="关闭礼物"><svg><use href="#i-close"/></svg></button><p class="paper-kicker" id="gift-kicker"></p><h2 id="gift-title"></h2><div id="gift-content"></div></div></dialog>
-  <dialog class="gallery-dialog" id="gallery-dialog" aria-labelledby="gallery-title">
-    <header class="gallery-header"><button class="gallery-back icon-control" id="gallery-back" type="button" aria-label="返回相册分类" title="返回分类" hidden><svg><use href="#i-next"/></svg></button><h2 id="gallery-title">照相馆</h2><button class="icon-control" id="gallery-close" type="button" aria-label="关闭照相馆" title="关闭照相馆"><svg><use href="#i-close"/></svg></button></header>
-    <div class="gallery-categories" id="gallery-categories"><button class="album-cover" type="button" data-album="love"><span class="cover-photo"><img src="assets/gallery/love-01.jpg" alt="Love 相册封面" loading="lazy"></span><span class="album-name">Love</span><span class="album-count">4 张 · 爱的日常</span></button><button class="album-cover" type="button" data-album="memory"><span class="cover-photo"><img src="assets/our-memory.jpg" alt="牵手相册封面" loading="lazy"></span><span class="album-name">牵手的瞬间</span><span class="album-count">1 张 · 我们的影子</span></button></div>
-    <section class="gallery-room" id="gallery-room" aria-label="环形照片墙" hidden><div class="photo-orbit" id="photo-orbit"></div><div class="orbit-controls"><button class="icon-control prev-control" id="orbit-prev" type="button" aria-label="向前转动照片" title="向前转动"><svg><use href="#i-next"/></svg></button><button class="icon-control" id="orbit-pause" type="button" aria-label="暂停转动" aria-pressed="false" title="暂停转动"><svg><use href="#i-pause"/></svg></button><button class="icon-control" id="orbit-next" type="button" aria-label="向后转动照片" title="向后转动"><svg><use href="#i-next"/></svg></button></div><p class="orbit-hint">拖动，让回忆转一圈 · 点击照片，放大这一刻</p></section>
-  </dialog>
-  <dialog class="lightbox-dialog" id="lightbox-dialog" aria-label="放大照片"><button class="icon-control lightbox-close" id="lightbox-close" type="button" aria-label="关闭放大照片" title="关闭照片"><svg><use href="#i-close"/></svg></button><button class="icon-control lightbox-prev prev-control" id="lightbox-prev" type="button" aria-label="上一张照片" title="上一张"><svg><use href="#i-next"/></svg></button><figure><img id="lightbox-image" alt="" src="assets/gallery/love-01.jpg"><figcaption id="lightbox-caption"></figcaption></figure><button class="icon-control lightbox-next" id="lightbox-next" type="button" aria-label="下一张照片" title="下一张"><svg><use href="#i-next"/></svg></button></dialog>
-  <noscript><div class="noscript">请开启浏览器的 JavaScript，来点亮这棵属于我们的圣诞树。</div></noscript>
-</body>
-</html>
+<div class="petals" aria-hidden="true"></div><header class="home-top"><span class="home-brand">曾<span>❤</span>敏</span></header>
+<main class="home-shell"><section class="couple-hero" aria-label="曾与敏"><div class="couple-banner"><button class="profile-avatar" id="avatar-zeng" type="button" aria-label="曾的头像"><img src="assets/avatar-zeng.png" alt="曾的头像" width="210" height="210"><span>曾</span></button><button class="heart-button" id="heart-button" type="button" aria-label="给我们一个爱心"><svg viewBox="0 0 100 100"><path d="M50 87 13 51C-10 26 23-5 50 22 77-5 110 26 87 51Z"/></svg><span class="heart-ring" aria-hidden="true"></span></button><button class="profile-avatar" id="avatar-min" type="button" aria-label="敏的头像"><img src="assets/avatar-min.png" alt="敏的头像" width="210" height="210"><span>敏</span></button></div></section>
+<section class="home-clock" aria-label="从2025年12月9日起的相恋时间"><div class="time-block"><strong id="home-days">0</strong><span>天</span></div><div class="time-block"><strong id="home-hours">00</strong><span>时</span></div><div class="time-block"><strong id="home-minutes">00</strong><span>分</span></div><div class="time-block"><strong id="home-seconds">00</strong><span>秒</span></div></section>
+<nav class="home-entries" aria-label="我们的故事"><a href="dailyM.html"><span class="entry-icon"><svg><use href="#i-heart"/></svg></span><h2>dailyM</h2></a><a href="gallery.html"><span class="entry-icon"><svg><use href="#i-camera"/></svg></span><h2>照相馆</h2></a><a href="gameM.html"><span class="entry-icon"><svg viewBox="0 0 24 24"><path d="M7 7h10c3 0 5 10 3 11s-4-3-5-3H9c-1 0-3 4-5 3S4 7 7 7ZM6 11h5M8.5 8.5v5M16 10h.01M18 12h.01"/></svg></span><h2>gameM</h2></a><a href="foodM.html"><span class="entry-icon"><svg viewBox="0 0 24 24"><path d="M5 3v6c0 3 5 3 5 0V3M7.5 3v18M19 3c-5 3-5 9 0 9v9M19 3v9"/></svg></span><h2>foodM</h2></a></nav></main>
+<button class="replay-cover soft-icon" id="replay-cover" type="button" aria-label="重看树的开场" title="重看开场"><svg viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 1 8M4 4v6h6"/></svg></button><div class="home-toast" id="home-toast" role="status" aria-live="polite"></div><section class="entry-cover" id="entry-cover" aria-label="冬日开场" hidden><iframe id="entry-frame" title="冬日树与牵手的我们"></iframe><button class="enter-button" id="enter-home" type="button">进入主页<span aria-hidden="true">♡</span></button></section></body></html>

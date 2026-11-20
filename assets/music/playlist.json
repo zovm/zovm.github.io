@@ -1,0 +1,50 @@
+[
+  {
+    "id": "track-01",
+    "title": "玻璃",
+    "artist": "Gareth.T",
+    "src": "assets/music/track-01.mp3",
+    "duration": 185,
+    "bytes": 7405776
+  },
+  {
+    "id": "track-02",
+    "title": "i hate u, i love u (feat. olivia o'brien)",
+    "artist": "gnash,Olivia O'Brien",
+    "src": "assets/music/track-02.mp3",
+    "duration": 227,
+    "bytes": 9065962
+  },
+  {
+    "id": "track-03",
+    "title": "目及皆是你",
+    "artist": "小蓝背心",
+    "src": "assets/music/track-03.mp3",
+    "duration": 231,
+    "bytes": 9245140
+  },
+  {
+    "id": "track-04",
+    "title": "慢慢",
+    "artist": "岳燃",
+    "src": "assets/music/track-04.mp3",
+    "duration": 195,
+    "bytes": 7784964
+  },
+  {
+    "id": "track-05",
+    "title": "想想念念",
+    "artist": "锦零",
+    "src": "assets/music/track-05.mp3",
+    "duration": 180,
+    "bytes": 7220491
+  },
+  {
+    "id": "track-06",
+    "title": "某年某月某天",
+    "artist": "颜人中",
+    "src": "assets/music/track-06.mp3",
+    "duration": 315,
+    "bytes": 12611862
+  }
+]

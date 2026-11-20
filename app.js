@@ -12,8 +12,8 @@
   let width = 0, height = 0, dpr = 1, mobile = false, layout = {};
   let elapsed = reducedMotion.matches ? 13 : 0, lastTime = 0, running = false;
   let snow = [], sparks = [], skyStars = [], pointer = { x: 0, y: 0 }, drift = { x: 0, y: 0 };
-  let glowPulse = 0, hintStage = -1, sceneFlags = '', frameId = 0, toastTimer = 0;
-  let wishData = [], musicEnabled = false, audioContext, musicTimer, melodyStep = 0, nextNote = 0;
+  let glowPulse = 0, hintStage = -1, sceneFlags = '', frameId = 0, toastTimer = 0, typedCount = -1;
+  let wishData = [];
   const tree = document.createElement('canvas'); tree.width = 800; tree.height = 1000;
   const tc = tree.getContext('2d');
   let seed = 1209;
@@ -169,7 +169,7 @@
     sky.addColorStop(0, '#c6a965' + Math.round((.045 + lit * .04) * 255).toString(16).padStart(2, '0')); sky.addColorStop(1, '#c6a96500');
     ctx.fillStyle = sky; ctx.fillRect(0, 0, width, height);
     for (const star of skyStars) {
-      ctx.fillStyle = '#cbd9d1'; ctx.globalAlpha = (.12 + .2 * Math.sin(time * .45 + star.phase) ** 2) * show;
+      ctx.fillStyle = '#c784a3'; ctx.globalAlpha = (.12 + .2 * Math.sin(time * .45 + star.phase) ** 2) * show;
       ctx.beginPath(); ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2); ctx.fill();
     }
     ctx.globalAlpha = 1;
@@ -204,7 +204,7 @@
     ctx.restore();
     for (const flake of snow) {
       ctx.globalAlpha = flake.alpha * show;
-      ctx.fillStyle = '#e1efed'; ctx.beginPath(); ctx.arc(flake.x + drift.x * .15, flake.y, flake.r, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#cc84a5'; ctx.beginPath(); ctx.arc(flake.x + drift.x * .15, flake.y, flake.r, 0, Math.PI * 2); ctx.fill();
     }
     ctx.globalAlpha = 1;
     for (const spark of sparks) {
@@ -229,6 +229,8 @@
     updateStages(); draw(reducedMotion.matches ? 0 : time); frameId = requestAnimationFrame(frame);
   }
   function updateStages() {
+    const count = Math.max(0, Math.min(6, Math.floor((elapsed - 9.5) * 3.5)));
+    if (count !== typedCount) { typedCount = count; $('typed-title').textContent = '敏，冬日暖阳'.slice(0, count); $('title').classList.toggle('typing', count > 0 && count < 6); }
     const flags = [elapsed > .7, elapsed > 9, elapsed > 9.5, elapsed >= 11.5].join(',');
     if (flags !== sceneFlags) {
       sceneFlags = flags;
@@ -323,7 +325,7 @@
         input.addEventListener('change', () => { const next = [...list.querySelectorAll('input')].flatMap((el, index) => el.checked ? [index] : []); try { localStorage.setItem(PROMISE_KEY, JSON.stringify(next)); } catch { toast('浏览器暂时无法保存打卡。'); } if (input.checked) burst(layout.cx, layout.base - 30); });
         label.append(input, text); list.append(label);
       });
-      const note = document.createElement('p'); note.className = 'promise-note'; note.textContent = '做过的小事，轻轻打个勾。打卡也会保存在当前浏览器。'; content.append(list, note);
+      const note = document.createElement('p'); note.className = 'promise-note'; note.textContent = '做过的小事，轻轻打个勾。打卡也会保存在当前浏览器。'; content.append(list);
     } else {
       const copy = document.createElement('div'); copy.className = 'help-copy';
       for (const line of ['点树顶星星：写下心愿，也能查看已经保存的心愿。', '点树下礼物：翻开一张回忆、一封小信和一起过冬的约定。', '点牵手的我们：让爱心升起，看看一起走过的天数。', '轻触圣诞树：点亮一片星光。右下角可以开音乐、重播开场。', '心愿和打卡仅保存在当前浏览器。清理网站数据后将不再保留。']) { const p = document.createElement('p'); p.textContent = line; copy.append(p); } content.append(copy);
@@ -331,44 +333,21 @@
     $('gift-dialog').showModal();
   }
 
-  // A quiet original bell motif, synthesized locally; no remote audio requests.
-  function scheduleMusic() {
-    if (!musicEnabled || !audioContext || audioContext.state !== 'running') return;
-    const notes = [74, 78, 81, 85, 83, 81, 78, 76, 74, null, 78, 81, 83, 78, 76, null];
-    while (nextNote < audioContext.currentTime + 2.5) {
-      const note = notes[melodyStep % notes.length];
-      if (note !== null) {
-        const osc = audioContext.createOscillator(), overtone = audioContext.createOscillator(), gain = audioContext.createGain();
-        const frequency = 440 * 2 ** ((note - 69) / 12); osc.type = 'sine'; overtone.type = 'sine'; osc.frequency.value = frequency; overtone.frequency.value = frequency * 2;
-        const overtoneGain = audioContext.createGain(); overtoneGain.gain.value = .14;
-        gain.gain.setValueAtTime(0, nextNote); gain.gain.linearRampToValueAtTime(.04, nextNote + .012); gain.gain.exponentialRampToValueAtTime(.0001, nextNote + 2.3);
-        osc.connect(gain); overtone.connect(overtoneGain).connect(gain); gain.connect(audioContext.destination); osc.start(nextNote); overtone.start(nextNote); osc.stop(nextNote + 2.4); overtone.stop(nextNote + 2.4);
-      }
-      melodyStep++; nextNote += .62;
-    }
-  }
-  $('music').addEventListener('click', async () => {
-    try {
-      if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      if (musicEnabled) { musicEnabled = false; clearInterval(musicTimer); await audioContext.suspend(); }
-      else { await audioContext.resume(); musicEnabled = true; nextNote = audioContext.currentTime + .06; scheduleMusic(); musicTimer = setInterval(scheduleMusic, 1200); }
-      $('music').setAttribute('aria-pressed', String(musicEnabled)); $('music').setAttribute('aria-label', musicEnabled ? '关闭音乐' : '开启音乐'); $('music').title = musicEnabled ? '关闭音乐' : '开启音乐';
-    } catch { toast('当前浏览器暂时无法播放音乐。'); }
-  });
   $('skip').addEventListener('click', skipIntro); $('replay').addEventListener('click', replay); $('tree-star').addEventListener('click', openWish);
   $('tree-touch').addEventListener('click', event => { skipIntro(); const r = night.getBoundingClientRect(); burst(event.detail === 0 ? layout.cx : event.clientX - r.left, event.detail === 0 ? layout.base - layout.h * .5 : event.clientY - r.top); glowPulse = 1; });
   $('couple').addEventListener('click', () => { burst(layout.cx, layout.base - layout.h * .24, true); toast(`从 2025.12.09 到今天，我们已一起走过 ${tickClock()} 天。`); });
   document.querySelectorAll('[data-gift]').forEach(button => button.addEventListener('click', () => openGift(button.dataset.gift)));
-  $('help').addEventListener('click', () => openGift('help'));
+  $('help')?.addEventListener('click', () => openGift('help'));
   night.addEventListener('pointermove', event => { const rect = night.getBoundingClientRect(); pointer.x = (event.clientX - rect.left) / width * 2 - 1; pointer.y = (event.clientY - rect.top) / height * 2 - 1; });
   night.addEventListener('pointerleave', () => { pointer.x = pointer.y = 0; });
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { running = false; cancelAnimationFrame(frameId); if (musicEnabled && audioContext) audioContext.suspend().catch(() => {}); }
-    else { lastTime = 0; if (!running) { running = true; frameId = requestAnimationFrame(frame); } if (musicEnabled && audioContext) audioContext.resume().then(() => { nextNote = audioContext.currentTime + .05; scheduleMusic(); }).catch(() => {}); }
+    if (document.hidden) { running = false; cancelAnimationFrame(frameId); }
+    else { lastTime = 0; if (!running) { running = true; frameId = requestAnimationFrame(frame); } }
   });
   addEventListener('storage', event => { if (event.key === WISH_KEY && $('wish-dialog').open) { readWishes(); renderWishes(); } });
   addEventListener('resize', resize, { passive: true });
   reducedMotion.addEventListener('change', () => { if (reducedMotion.matches) skipIntro(); resize(); });
+  if (new URLSearchParams(location.search).has('embedded')) { document.querySelector('.welcome-enter').hidden = true; }
   resize(); tickClock(); setInterval(tickClock, 1000); readWishes();
   // Give the small figure asset a chance to decode before its reveal; opening
   // snowfall starts immediately and never waits for a network service.

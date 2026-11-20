@@ -63,12 +63,13 @@
   function openGallery() { categories(); if(!gallery.open) gallery.showModal(); }
   $('gallery-open').addEventListener('click', openGallery);
   document.addEventListener('open-gallery', openGallery);
-  $('gallery-close').addEventListener('click', () => gallery.close()); $('gallery-back').addEventListener('click', categories);
+  $('gallery-close').addEventListener('click', () => { if(document.body.dataset.galleryPage) location.href='./?home=1'; else gallery.close(); }); $('gallery-back').addEventListener('click', categories);
   document.querySelectorAll('[data-album]').forEach(button => button.addEventListener('click', () => selectAlbum(button.dataset.album)));
   $('orbit-prev').addEventListener('click', () => { angle -= Math.PI / 2; paint(); }); $('orbit-next').addEventListener('click', () => { angle += Math.PI / 2; paint(); });
   $('orbit-pause').addEventListener('click', () => { paused = !paused; pauseButton(); });
   $('lightbox-close').addEventListener('click', () => lightbox.close()); $('lightbox-prev').addEventListener('click', () => showPhoto(photoIndex - 1)); $('lightbox-next').addEventListener('click', () => showPhoto(photoIndex + 1));
   gallery.addEventListener('close', () => { if (frame) cancelAnimationFrame(frame); frame = 0; });
+  gallery.addEventListener('cancel', event=>{if(document.body.dataset.galleryPage){event.preventDefault();location.href='./?home=1';}});
   orbit.addEventListener('pointerenter', () => { hovering = true; }); orbit.addEventListener('pointerleave', () => { if (!dragging) hovering = false; });
   orbit.addEventListener('pointerdown', event => { if (event.button !== 0) return; dragging = true; dragged = false; dragStart = event.clientX; dragAngle = angle; });
   addEventListener('pointermove', event => { if (!dragging) return; const dx = event.clientX - dragStart; if (Math.abs(dx) > 7) { dragged = true; angle = dragAngle + dx * .009; paint(); } }, { passive: true });
@@ -80,5 +81,5 @@
   document.addEventListener('visibilitychange', () => { last = 0; });
   reduce.addEventListener('change', () => { paused = reduce.matches; pauseButton(); });
   pauseButton();
-  if(location.hash === '#gallery') openGallery();
+  if(location.hash === '#gallery' || document.body.dataset.galleryPage) openGallery();
 })();
