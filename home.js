@@ -3,7 +3,7 @@
   const origin=Date.parse('2025-12-09T00:00:00+08:00');
   function clock(){const elapsed=Math.max(0,Date.now()-origin);$('home-days').textContent=Math.floor(elapsed/86400000);for(const [id,div]of[['hours',3600000],['minutes',60000],['seconds',1000]])$(`home-${id}`).textContent=String(Math.floor(elapsed/div)%(id==='hours'?24:60)).padStart(2,'0');}
   clock();setInterval(clock,1000);
-  function showCover(){frame.src='welcome.html?embedded=1';cover.hidden=false;document.body.classList.add('cover-open');$('enter-home').focus();}
+  function showCover(){frame.src='welcome.html?embedded=1&v=20261121-8';cover.hidden=false;document.body.classList.add('cover-open');$('enter-home').focus();}
   function enter(){try{sessionStorage.setItem('zengmin:entered','1');}catch{}cover.classList.add('leaving');setTimeout(()=>{cover.hidden=true;cover.classList.remove('leaving');frame.src='about:blank';document.body.classList.remove('cover-open');$('heart-button').focus();},matchMedia('(prefers-reduced-motion: reduce)').matches?0:650);}
   $('enter-home').addEventListener('click',enter);$('replay-cover').addEventListener('click',showCover);
   addEventListener('message',event=>{if(event.origin===location.origin&&event.source===frame.contentWindow&&event.data?.type==='winter:enter')enter();});
