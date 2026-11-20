@@ -333,7 +333,7 @@
     $('gift-dialog').showModal();
   }
 
-  $('skip').addEventListener('click', skipIntro); $('replay').addEventListener('click', replay); $('tree-star').addEventListener('click', openWish);
+  $('skip').addEventListener('click', skipIntro); $('replay')?.addEventListener('click', replay); $('tree-star').addEventListener('click', openWish);
   $('tree-touch').addEventListener('click', event => { skipIntro(); const r = night.getBoundingClientRect(); burst(event.detail === 0 ? layout.cx : event.clientX - r.left, event.detail === 0 ? layout.base - layout.h * .5 : event.clientY - r.top); glowPulse = 1; });
   $('couple').addEventListener('click', () => { burst(layout.cx, layout.base - layout.h * .24, true); toast(`从 2025.12.09 到今天，我们已一起走过 ${tickClock()} 天。`); });
   document.querySelectorAll('[data-gift]').forEach(button => button.addEventListener('click', () => openGift(button.dataset.gift)));

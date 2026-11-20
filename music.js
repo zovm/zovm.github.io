@@ -1,4 +1,5 @@
 (() => {
+  if(document.body.dataset.page==='welcome')return;
   const embedded=window.self!==window.top&&new URLSearchParams(location.search).has('embedded');
   if(embedded){const local=document.getElementById('music');if(local){local.setAttribute('aria-label','打开播放列表');local.removeAttribute('aria-pressed');local.title='播放列表';local.addEventListener('click',()=>parent.postMessage({type:'winter:music'},location.origin));}return;}
   const key='zengmin:music-v1';let saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}');}catch{}

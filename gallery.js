@@ -61,7 +61,7 @@
     $('orbit-pause').querySelector('use').setAttribute('href', paused ? '#i-play' : '#i-pause');
   }
   function openGallery() { categories(); if(!gallery.open) gallery.showModal(); }
-  $('gallery-open').addEventListener('click', openGallery);
+  $('gallery-open')?.addEventListener('click', openGallery);
   document.addEventListener('open-gallery', openGallery);
   $('gallery-close').addEventListener('click', () => { if(document.body.dataset.galleryPage) location.href='./?home=1'; else gallery.close(); }); $('gallery-back').addEventListener('click', categories);
   document.querySelectorAll('[data-album]').forEach(button => button.addEventListener('click', () => selectAlbum(button.dataset.album)));

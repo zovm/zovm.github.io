@@ -49,3 +49,5 @@
 参考项目：[LikeGirl-CE](https://github.com/ShiFengShuA/LikeGirl-CE)、[ForYouMyLove](https://github.com/zayennn/foryoumylove.github.io)。
 
 头像、Love 相册与牵手照片由用户提供。透明情侣剪影和远景小镇沿用前一版生成素材；圣诞树、灯、雪、礼物均由网页绘制。
+
+主页计时上方的 “time together forever” 使用本地提供的 [Great Vibes](https://github.com/google/fonts/tree/main/ofl/greatvibes) 花体字体，授权文件保存在 `assets/fonts/OFL.txt`。圣诞树开场不再显示底部的相机、音乐与重播控制栏；照相馆和歌单仍可从主页进入。
