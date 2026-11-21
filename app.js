@@ -14,6 +14,8 @@
   let snow = [], sparks = [], skyStars = [], pointer = { x: 0, y: 0 }, drift = { x: 0, y: 0 };
   let glowPulse = 0, hintStage = -1, sceneFlags = '', frameId = 0, toastTimer = 0, typedCount = -1;
   let wishData = [];
+  let sceneReady = false, sceneAssetsReady = false;
+  const embedded = window.self !== window.top && new URLSearchParams(location.search).has('embedded');
   const tree = document.createElement('canvas'); tree.width = 800; tree.height = 1000;
   const tc = tree.getContext('2d');
   let seed = 1209;
@@ -231,6 +233,12 @@
   function updateStages() {
     const count = Math.max(0, Math.min(6, Math.floor((elapsed - 9.5) * 3.5)));
     if (count !== typedCount) { typedCount = count; $('typed-title').textContent = '敏，冬日暖阳'.slice(0, count); $('title').classList.toggle('typing', count > 0 && count < 6); }
+    const ready = elapsed >= 12.4 && sceneAssetsReady;
+    if (ready !== sceneReady) {
+      sceneReady = ready; night.classList.toggle('scene-ready', ready);
+      document.querySelector('.welcome-enter').hidden = embedded || !ready;
+      if (embedded) parent.postMessage({ type: ready ? 'winter:ready' : 'winter:building' }, location.origin);
+    }
     const flags = [elapsed > .7, elapsed > 9, elapsed > 9.5, elapsed >= 11.5].join(',');
     if (flags !== sceneFlags) {
       sceneFlags = flags;
@@ -270,7 +278,7 @@
   }
   function renderWishes() {
     $('wish-count').textContent = String(wishData.length); $('wish-list').replaceChildren();
-    if (!wishData.length) { const p = document.createElement('p'); p.className = 'empty-wishes'; p.textContent = '还没有心愿。把第一个，留给这个冬天吧。'; $('wish-list').append(p); return; }
+    if (!wishData.length) return;
     const dateFormat = new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' });
     for (const wish of wishData) {
       const article = document.createElement('article'); article.className = 'wish-entry';
@@ -307,16 +315,16 @@
   }
   function openGift(kind) {
     const content = $('gift-content'); content.replaceChildren();
-    const titles = { memory: ['A MOMENT OF US', '影子也记得，我们牵着手。'], letter: ['A LITTLE LETTER FOR YOU', '这个冬天，想对你说。'], together: ['LITTLE THINGS, TOGETHER', '一起过冬的小约定。'], help: ['A LITTLE GUIDE', '这里，藏着一些小惊喜。'] };
+    const titles = { memory: ['A MOMENT OF US', '我有此妻，夫复何求'], letter: ['A LITTLE LETTER FOR YOU', '这个冬天，想对你说。'], together: ['LITTLE THINGS, TOGETHER', '一起过冬的小约定。'], help: ['A LITTLE GUIDE', '这里，藏着一些小惊喜。'] };
     $('gift-kicker').textContent = titles[kind][0]; $('gift-title').textContent = titles[kind][1];
     if (kind === 'memory') {
       const figure = document.createElement('figure'); figure.className = 'gift-photo';
       const photo = document.createElement('img'); photo.src = 'assets/our-memory.jpg'; photo.alt = '红地毯上，我们牵手的影子'; photo.width = 1080; photo.height = 1440;
-      const caption = document.createElement('figcaption'); caption.textContent = '影子替我们，把牵手的这一刻留了下来。'; figure.append(photo, caption); content.append(figure);
+      figure.append(photo); content.append(figure);
     } else if (kind === 'letter') {
       const copy = document.createElement('div'); copy.className = 'letter-copy';
-      for (const line of ['从 2025 年 12 月 9 日开始，很多平常的日子，因为有你，变得值得纪念。', '想把这场雪、这棵树，还有一盏盏慢慢亮起来的灯，都送给你。', '愿以后的冬天，都能牵着你的手，把小日子过得暖一点，再暖一点。']) { const p = document.createElement('p'); p.textContent = line; copy.append(p); }
-      const sign = document.createElement('p'); sign.className = 'letter-sign'; sign.textContent = '圣诞快乐，身边的你。'; copy.append(sign); content.append(copy);
+      for (const line of ['从 2025 年 12 月 9 日开始，很多平常的日子，因为有你，变得值得纪念。', '想把这场雪、这棵树，还有一盏盏慢慢亮起来的灯，都送给你。', '愿以后的冬天，都能牵着你的手。']) { const p = document.createElement('p'); p.textContent = line; copy.append(p); }
+      const sign = document.createElement('p'); sign.className = 'letter-sign'; sign.textContent = 'Love 敏'; copy.append(sign); content.append(copy);
     } else if (kind === 'together') {
       let saved = []; try { const data = JSON.parse(localStorage.getItem(PROMISE_KEY) || '[]'); saved = Array.isArray(data) ? data : []; } catch {}
       const list = document.createElement('div'); list.className = 'promise-list';
@@ -347,10 +355,14 @@
   addEventListener('storage', event => { if (event.key === WISH_KEY && $('wish-dialog').open) { readWishes(); renderWishes(); } });
   addEventListener('resize', resize, { passive: true });
   reducedMotion.addEventListener('change', () => { if (reducedMotion.matches) skipIntro(); resize(); });
-  if (new URLSearchParams(location.search).has('embedded')) { document.querySelector('.welcome-enter').hidden = true; }
+  document.querySelector('.welcome-enter').hidden = true;
   resize(); tickClock(); setInterval(tickClock, 1000); readWishes();
-  // Give the small figure asset a chance to decode before its reveal; opening
-  // snowfall starts immediately and never waits for a network service.
-  const figure = $('couple').querySelector('img'); if (figure.decode) figure.decode().catch(() => {});
+  // The entrance waits for the finished animation and both scene images.
+  // Loading failures still settle, keeping the homepage reachable.
+  const figure = $('couple').querySelector('img'), town = new Image(); town.src = 'assets/winter-town.webp';
+  const decoded = image => image.decode ? image.decode() : new Promise(resolve => {
+    if (image.complete) resolve(); else { image.addEventListener('load', resolve, { once: true }); image.addEventListener('error', resolve, { once: true }); }
+  });
+  Promise.allSettled([decoded(figure), decoded(town)]).then(() => { sceneAssetsReady = true; updateStages(); });
   running = true; frameId = requestAnimationFrame(frame);
 })();

@@ -5,7 +5,7 @@
   const page = document.body.dataset.journal || document.body.dataset.page || 'home'; drawer.querySelector(`[data-page="${page}"]`)?.setAttribute('aria-current','page');
   if(document.body.dataset.galleryPage){document.getElementById('gallery-dialog').append(toggle);document.body.append(drawer);}else document.body.append(toggle,drawer);
   if(new URLSearchParams(location.search).has('embedded'))drawer.querySelectorAll('a').forEach(a=>a.target='_top');
-  const credit=document.createElement('footer');credit.className='site-credit';const signature=document.createElement('em');signature.textContent='launched by Z&M';credit.append(signature);if(document.body.dataset.galleryPage)document.getElementById('gallery-dialog').append(credit);else document.body.append(credit);
+  if(page!=='welcome'){const credit=document.createElement('footer');credit.className='site-credit';const signature=document.createElement('em');signature.textContent='launched by Z&M';credit.append(signature);if(document.body.dataset.galleryPage)document.getElementById('gallery-dialog').append(credit);else document.body.append(credit);}
   toggle.addEventListener('click', () => { drawer.showModal(); toggle.setAttribute('aria-expanded','true'); });
   drawer.querySelector('.drawer-close').addEventListener('click', () => drawer.close());
   drawer.addEventListener('close', () => toggle.setAttribute('aria-expanded','false'));

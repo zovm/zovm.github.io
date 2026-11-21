@@ -1,0 +1,146 @@
+[
+  {
+    "id": "love",
+    "title": "Love",
+    "cover": "assets/gallery/love-01.jpg",
+    "items": [
+      {
+        "type": "image",
+        "src": "assets/gallery/love-01.jpg",
+        "alt": "牵手比心"
+      },
+      {
+        "type": "image",
+        "src": "assets/gallery/love-02.jpg",
+        "alt": "灯下的影子"
+      },
+      {
+        "type": "image",
+        "src": "assets/gallery/love-04.jpg",
+        "alt": "一起吃冰淇淋"
+      },
+      {
+        "type": "image",
+        "src": "assets/gallery/love-05.webp",
+        "alt": "我们的拼豆"
+      },
+      {
+        "type": "image",
+        "src": "assets/gallery/love-06.webp",
+        "alt": "写下曾和敏"
+      },
+      {
+        "type": "image",
+        "src": "assets/gallery/love-07.webp",
+        "alt": "西瓜拼豆和牵着的手"
+      },
+      {
+        "type": "image",
+        "src": "assets/gallery/love-08.webp",
+        "alt": "留给你的小玩偶"
+      }
+    ]
+  },
+  {
+    "id": "memory",
+    "title": "牵手的瞬间",
+    "cover": "assets/our-memory.jpg",
+    "items": [
+      {
+        "type": "image",
+        "src": "assets/our-memory.jpg",
+        "alt": "我们牵手的影子"
+      }
+    ]
+  },
+  {
+    "id": "pair",
+    "title": "情侣头像",
+    "cover": "assets/gallery/pair-01.webp",
+    "items": [
+      {
+        "type": "image",
+        "src": "assets/gallery/pair-01.webp",
+        "alt": "情侣头像，第 1 张"
+      },
+      {
+        "type": "image",
+        "src": "assets/gallery/pair-02.webp",
+        "alt": "情侣头像，第 2 张"
+      },
+      {
+        "type": "image",
+        "src": "assets/gallery/pair-03.webp",
+        "alt": "情侣头像，第 3 张"
+      },
+      {
+        "type": "image",
+        "src": "assets/gallery/pair-04.webp",
+        "alt": "情侣头像，第 4 张"
+      },
+      {
+        "type": "image",
+        "src": "assets/gallery/pair-05.webp",
+        "alt": "情侣头像，第 5 张"
+      },
+      {
+        "type": "image",
+        "src": "assets/gallery/pair-06.webp",
+        "alt": "情侣头像，第 6 张"
+      },
+      {
+        "type": "image",
+        "src": "assets/gallery/pair-07.webp",
+        "alt": "情侣头像，第 7 张"
+      },
+      {
+        "type": "image",
+        "src": "assets/gallery/pair-08.webp",
+        "alt": "情侣头像，第 8 张"
+      }
+    ]
+  },
+  {
+    "id": "food",
+    "title": "food · 甜蜜食光",
+    "cover": "assets/gallery/love-03.jpg",
+    "items": [
+      {
+        "type": "image",
+        "src": "assets/gallery/love-03.jpg",
+        "alt": "属于我们的蛋糕"
+      }
+    ]
+  },
+  {
+    "id": "drink",
+    "title": "drink · 饮品时光",
+    "cover": "assets/gallery/drink-01.webp",
+    "items": [
+      {
+        "type": "image",
+        "src": "assets/gallery/drink-01.webp",
+        "alt": "一起喝奶茶"
+      },
+      {
+        "type": "image",
+        "src": "assets/gallery/drink-02.webp",
+        "alt": "一杯甜甜的饮品"
+      }
+    ]
+  },
+  {
+    "id": "video",
+    "title": "视频日记",
+    "cover": "assets/gallery/video-01-poster.webp",
+    "items": [
+      {
+        "type": "video",
+        "src": "assets/gallery/video-01.mp4",
+        "poster": "assets/gallery/video-01-poster.webp",
+        "alt": "一起收藏的片段",
+        "duration": 13.07
+      }
+    ]
+  }
+]
