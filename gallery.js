@@ -11,7 +11,14 @@
   const mediaError = document.createElement('p');
   mediaError.className = 'gallery-media-error'; mediaError.hidden = true;
   mediaError.setAttribute('role', 'alert'); $('lightbox-caption').after(mediaError);
+  const breadcrumbs = document.createElement('nav');
+  breadcrumbs.className = 'gallery-path'; breadcrumbs.setAttribute('aria-label', '相册路径');
+  breadcrumbs.hidden = true; gallery.querySelector('.gallery-header').append(breadcrumbs);
+  const emptyAlbum = document.createElement('p');
+  emptyAlbum.className = 'gallery-empty'; emptyAlbum.textContent = '暂无照片'; emptyAlbum.hidden = true;
+  room.append(emptyAlbum);
   let albums = null, catalogPromise = null, selected = null;
+  let ancestors = [], requestedAlbum = document.body.dataset.galleryPage ? new URLSearchParams(location.search).get('album') : null;
   let angle = 0, cards = [], frame = 0, last = 0, paused = reduce.matches, hovering = false;
   let dragging = false, dragged = false, dragStart = 0, dragAngle = 0, mediaIndex = 0;
   let radiusX = 0, radiusY = 0;
@@ -23,34 +30,80 @@
     video.pause(); video.removeAttribute('src'); video.load(); video.hidden = true;
     mediaError.hidden = true; mediaError.replaceChildren();
   }
+  function validateCatalog(list, ids = new Set()) {
+    if (!Array.isArray(list) || !list.length) throw new Error('Invalid album list');
+    for (const album of list) {
+      if (!album.id || !album.title || ids.has(album.id)) throw new Error('Invalid album');
+      ids.add(album.id);
+      if (Array.isArray(album.children)) validateCatalog(album.children, ids);
+      else if (!Array.isArray(album.items) || album.items.some(item => !['image', 'video'].includes(item.type) || !item.src || !item.alt)) throw new Error('Invalid media');
+    }
+  }
+  function currentAlbums() { return ancestors.length ? ancestors[ancestors.length - 1].children : albums; }
+  function findAlbum(id, list = albums, parents = []) {
+    for (const album of list) {
+      if (album.id === id) return { album, parents };
+      if (album.children) { const found = findAlbum(id, album.children, [...parents, album]); if (found) return found; }
+    }
+    return null;
+  }
+  function updatePath() {
+    const path = [...ancestors]; if (selected) path.push(selected);
+    breadcrumbs.replaceChildren(); breadcrumbs.hidden = !path.length;
+    gallery.classList.toggle('has-album-path', path.length > 0);
+    function part(title, action) {
+      if (breadcrumbs.children.length) { const slash = document.createElement('span'); slash.textContent = '/'; slash.setAttribute('aria-hidden', 'true'); breadcrumbs.append(slash); }
+      const element = document.createElement(action ? 'button' : 'span'); element.textContent = title;
+      if (action) { element.type = 'button'; element.addEventListener('click', action); }
+      else element.setAttribute('aria-current', 'page');
+      breadcrumbs.append(element);
+    }
+    if (path.length) part('照相馆', () => categories(true));
+    path.forEach((album, index) => part(album.title, index < path.length - 1 ? () => { ancestors = ancestors.slice(0, index + 1); categories(); } : null));
+    const backTitle = selected ? (ancestors[ancestors.length - 1]?.title || '相册分类') : (ancestors[ancestors.length - 2]?.title || '照相馆');
+    $('gallery-back').setAttribute('aria-label', '返回' + backTitle); $('gallery-back').title = '返回' + backTitle;
+    if (document.body.dataset.galleryPage && albums) {
+      const url = new URL(location.href), active = selected || ancestors[ancestors.length - 1];
+      if (active) url.searchParams.set('album', active.id); else url.searchParams.delete('album');
+      history.replaceState(history.state, '', url);
+    }
+  }
   async function catalog() {
     if (albums) return albums;
     if (!catalogPromise) catalogPromise = (async () => {
-      const response = await fetch('assets/gallery/albums.json?v=20261121-10');
+      const response = await fetch('assets/gallery/albums.json?v=20261121-12');
       if (!response.ok) throw new Error('Cannot load albums');
       const data = await response.json();
-      if (!Array.isArray(data) || !data.length || data.some(a => !a.id || !a.title || !a.items?.length)) throw new Error('Invalid album');
+      validateCatalog(data);
       albums = data; return albums;
     })().finally(() => { catalogPromise = null; });
     return catalogPromise;
   }
-  function renderCategories() {
+  function renderCategories(focusId = null) {
     categoryList.replaceChildren();
-    for (const album of albums) {
+    for (const album of currentAlbums()) {
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'album-cover'; button.dataset.album = album.id;
+      if (album.display === 'screenshot') button.classList.add('screenshot-cover');
+      if (album.children) button.classList.add('album-folder');
       const cover = document.createElement('span'); cover.className = 'cover-photo';
-      const image = document.createElement('img'); image.src = album.cover;
-      image.alt = album.title + '相册封面'; image.loading = 'lazy'; image.decoding = 'async';
-      cover.append(image);
+      if (album.cover) {
+        const image = document.createElement('img'); image.src = album.cover;
+        image.alt = album.title + '相册封面'; image.loading = 'lazy'; image.decoding = 'async'; cover.append(image);
+      } else {
+        cover.classList.add('album-placeholder');
+        cover.innerHTML = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M15 15h18c8 0 14 23 9 25s-9-8-12-8H18c-3 0-7 10-12 8S7 15 15 15Z"/><path d="M10 23h10M15 18v10M31 22h.1M36 26h.1"/></svg>';
+      }
+      if (album.children) { const badge = document.createElement('span'); badge.className = 'album-folder-mark'; badge.setAttribute('aria-hidden', 'true'); badge.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 7V5h7l3 3h8v12H3ZM3 8h18"/></svg>'; cover.append(badge); }
       const name = document.createElement('span'); name.className = 'album-name'; name.textContent = album.title;
       const count = document.createElement('span'); count.className = 'album-count';
-      const clips = album.items.filter(item => item.type === 'video').length;
-      const photos = album.items.length - clips;
-      count.textContent = [photos ? `${photos} 张` : '', clips ? `${clips} 段视频` : ''].filter(Boolean).join(' · ');
+      const clips = (album.items || []).filter(item => item.type === 'video').length;
+      const photos = (album.items || []).length - clips;
+      count.textContent = album.children ? `${album.children.length} 个相册` : [photos ? `${photos} 张` : '', clips ? `${clips} 段视频` : ''].filter(Boolean).join(' · ') || '0 张';
       button.append(cover, name, count);
       button.addEventListener('click', () => selectAlbum(album.id));
       categoryList.append(button);
+      if (album.id === focusId) button.focus();
     }
   }
   function layout() {
@@ -76,19 +129,25 @@
     frame = requestAnimationFrame(animate);
   }
   function start() { if (!frame) { last = 0; frame = requestAnimationFrame(animate); } }
+  function rotate(direction) { if (cards.length > 1) { angle += direction * Math.PI * 2 / cards.length; paint(); } }
   function selectAlbum(key) {
-    selected = albums.find(album => album.id === key); if (!selected) return;
+    const album = currentAlbums().find(album => album.id === key); if (!album) return;
+    if (album.children) { ancestors.push(album); categories(); categoryList.scrollTop = 0; return; }
+    selected = album;
     stopVideo(); angle = 0; dragging = dragged = hovering = false;
     categoryList.hidden = true; room.hidden = false; $('gallery-back').hidden = false;
     $('gallery-title').textContent = selected.title;
+    emptyAlbum.hidden = selected.items.length > 0; orbit.hidden = selected.items.length === 0;
+    updatePath();
     orbit.replaceChildren();
     cards = selected.items.map((item, index) => {
       const card = document.createElement('button'); card.type = 'button'; card.className = 'orbit-card';
       if (selected.id === 'pair') card.classList.add('illustration-card');
+      if (selected.display === 'screenshot') card.classList.add('screenshot-card');
       if (item.type === 'video') card.classList.add('video-card');
       card.setAttribute('aria-label', `${item.type === 'video' ? '播放视频：' : '放大'}${item.alt}`);
       const image = document.createElement('img');
-      image.src = item.type === 'video' ? item.poster : item.src; image.alt = item.alt;
+      image.src = item.type === 'video' ? item.poster : (item.thumb || item.src); image.alt = item.alt;
       image.draggable = false; image.decoding = 'async';
       const number = document.createElement('span'); number.className = 'media-number';
       number.textContent = String(index + 1).padStart(2, '0'); number.setAttribute('aria-hidden', 'true');
@@ -105,13 +164,21 @@
       orbit.append(card); return card;
     });
     for (const id of ['orbit-prev', 'orbit-next', 'orbit-pause']) $(id).hidden = cards.length <= 1;
-    layout(); start();
+    layout(); if (cards.length) start();
   }
-  function categories() {
+  function categories(reset = false, focusId = null) {
     stopVideo(); room.hidden = true; categoryList.hidden = false;
-    $('gallery-back').hidden = true; $('gallery-title').textContent = '照相馆';
+    if (reset) ancestors = [];
+    $('gallery-back').hidden = ancestors.length === 0;
+    $('gallery-title').textContent = ancestors[ancestors.length - 1]?.title || '照相馆';
     if (frame) cancelAnimationFrame(frame);
     frame = 0; selected = null; hovering = dragging = dragged = false;
+    if (albums) renderCategories(focusId);
+    updatePath();
+  }
+  function back() {
+    if (!room.hidden) { const focusId = selected?.id; categories(false, focusId); }
+    else if (ancestors.length) { const focusId = ancestors.pop().id; categories(false, focusId); }
   }
   function showMedia(index) {
     stopVideo(); mediaIndex = (index + selected.items.length) % selected.items.length;
@@ -123,7 +190,8 @@
     } else {
       image.src = item.src; image.alt = item.alt; lightbox.setAttribute('aria-label', '放大照片');
     }
-    $('lightbox-caption').textContent = `${selected.title} · ${mediaIndex + 1} / ${selected.items.length}`;
+    const label = selected.display === 'screenshot' ? item.alt : selected.title;
+    $('lightbox-caption').textContent = `${label} · ${mediaIndex + 1} / ${selected.items.length}`;
     $('lightbox-prev').hidden = $('lightbox-next').hidden = selected.items.length < 2;
     if (!lightbox.open) lightbox.showModal();
     if (item.type === 'video') video.play().catch(() => {});
@@ -135,12 +203,19 @@
     $('orbit-pause').querySelector('use').setAttribute('href', paused ? '#i-play' : '#i-pause');
   }
   async function openGallery() {
-    categories(); if (!gallery.open) gallery.showModal();
+    categories(true); if (!gallery.open) gallery.showModal();
     if (albums) return;
     const loading = document.createElement('p'); loading.className = 'gallery-state';
     loading.textContent = '正在翻开相册…'; loading.setAttribute('role', 'status'); categoryList.replaceChildren(loading);
     categoryList.setAttribute('aria-busy', 'true');
-    try { await catalog(); renderCategories(); }
+    try {
+      await catalog(); renderCategories();
+      if (requestedAlbum) {
+        const destination = findAlbum(requestedAlbum); requestedAlbum = null;
+        if (destination) { ancestors = destination.parents; selectAlbum(destination.album.id); }
+        else updatePath();
+      }
+    }
     catch {
       const retry = document.createElement('button'); retry.className = 'quiet-button gallery-retry';
       retry.type = 'button'; retry.textContent = '重新加载相册'; retry.addEventListener('click', openGallery);
@@ -152,9 +227,9 @@
   $('gallery-close').addEventListener('click', () => {
     if (document.body.dataset.galleryPage) location.href = './?home=1'; else gallery.close();
   });
-  $('gallery-back').addEventListener('click', categories);
-  $('orbit-prev').addEventListener('click', () => { angle -= Math.PI / 2; paint(); });
-  $('orbit-next').addEventListener('click', () => { angle += Math.PI / 2; paint(); });
+  $('gallery-back').addEventListener('click', back);
+  $('orbit-prev').addEventListener('click', () => rotate(-1));
+  $('orbit-next').addEventListener('click', () => rotate(1));
   $('orbit-pause').addEventListener('click', () => { paused = !paused; pauseButton(); });
   $('lightbox-close').addEventListener('click', () => lightbox.close());
   $('lightbox-prev').addEventListener('click', () => showMedia(mediaIndex - 1));
@@ -168,7 +243,8 @@
   });
   gallery.addEventListener('close', () => { stopVideo(); if (frame) cancelAnimationFrame(frame); frame = 0; });
   gallery.addEventListener('cancel', event => {
-    if (document.body.dataset.galleryPage) { event.preventDefault(); location.href = './?home=1'; }
+    if (!room.hidden || ancestors.length) { event.preventDefault(); back(); }
+    else if (document.body.dataset.galleryPage) { event.preventDefault(); location.href = './?home=1'; }
   });
   orbit.addEventListener('pointerenter', () => { hovering = true; });
   orbit.addEventListener('pointerleave', () => { if (!dragging) hovering = false; });
@@ -190,7 +266,7 @@
   });
   gallery.addEventListener('keydown', event => {
     if (room.hidden || lightbox.open) return;
-    if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') { event.preventDefault(); angle += (event.key === 'ArrowRight' ? 1 : -1) * Math.PI / 2; paint(); }
+    if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') { event.preventDefault(); rotate(event.key === 'ArrowRight' ? 1 : -1); }
   });
   addEventListener('pagehide', () => video.pause());
   addEventListener('resize', () => { if (gallery.open && !room.hidden) layout(); }, { passive: true });

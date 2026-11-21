@@ -142,5 +142,63 @@
         "duration": 13.07
       }
     ]
+  },
+  {
+    "id": "wz",
+    "title": "王者荣耀",
+    "display": "screenshot",
+    "cover": "assets/gallery/wz/level-26-thumb.webp",
+    "children": [
+      {
+        "id": "wz-level",
+        "title": "情侣等级",
+        "display": "screenshot",
+        "items": [
+          {
+            "type": "image",
+            "src": "assets/gallery/wz/level-17.jpg",
+            "thumb": "assets/gallery/wz/level-17-thumb.webp",
+            "alt": "王者荣耀情侣等级 Lv17"
+          },
+          {
+            "type": "image",
+            "src": "assets/gallery/wz/level-18.jpg",
+            "thumb": "assets/gallery/wz/level-18-thumb.webp",
+            "alt": "王者荣耀情侣等级 Lv18"
+          },
+          {
+            "type": "image",
+            "src": "assets/gallery/wz/level-19.jpg",
+            "thumb": "assets/gallery/wz/level-19-thumb.webp",
+            "alt": "王者荣耀情侣等级 Lv19"
+          },
+          {
+            "type": "image",
+            "src": "assets/gallery/wz/level-20.jpg",
+            "thumb": "assets/gallery/wz/level-20-thumb.webp",
+            "alt": "王者荣耀情侣等级 Lv20"
+          },
+          {
+            "type": "image",
+            "src": "assets/gallery/wz/level-24.jpg",
+            "thumb": "assets/gallery/wz/level-24-thumb.webp",
+            "alt": "王者荣耀情侣等级 Lv24"
+          },
+          {
+            "type": "image",
+            "src": "assets/gallery/wz/level-26.jpg",
+            "thumb": "assets/gallery/wz/level-26-thumb.webp",
+            "alt": "王者荣耀情侣等级 Lv26"
+          }
+        ],
+        "cover": "assets/gallery/wz/level-26-thumb.webp"
+      },
+      {
+        "id": "wz-gameplay",
+        "title": "游戏内容",
+        "display": "screenshot",
+        "items": []
+      }
+    ]
   }
 ]

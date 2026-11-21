@@ -61,3 +61,9 @@
 地图边界和城市中心来自 [DataV.GeoAtlas](https://datav.aliyun.com/portal/school/atlas/area_selector)，原始边界接口为 `https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json`，城市行政区编码依次为 360500、360100、430100、361100、330800、330600、320100。本地化的向量数据位于 `assets/travel/map.json`，不依赖访问者连接地图服务，包含省级边界和南海诸岛附图。
 
 主页在相恋计时下方增加整行的周年纪念日倒计时。每年按北京时间 12 月 9 日零点计算周年，当天显示周年祝福，12 月 10 日切换至下一年。
+
+## 王者荣耀相册
+
+照相馆新增“王者荣耀”父分类，下面是“情侣等级”和“游戏内容”。情侣等级包含用户提供的 6 张原始截图，按 Lv17、Lv18、Lv19、Lv20、Lv24、Lv26 排列，缩略图独立加载，放大时显示完整原图。游戏内容目前为空，保留子相册位置。
+
+支持分层返回和相册路径导航；独立链接为 `gallery.html?album=wz`、`gallery.html?album=wz-level` 和 `gallery.html?album=wz-gameplay`。现有照片与视频相册保留。原始素材来自用户指定的 `Desktop/zm/game/wz/level`，网站副本位于 `assets/gallery/wz/`。
