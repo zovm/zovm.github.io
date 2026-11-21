@@ -31,7 +31,7 @@
     mediaError.hidden = true; mediaError.replaceChildren();
   }
   function validateCatalog(list, ids = new Set()) {
-    if (!Array.isArray(list) || !list.length) throw new Error('Invalid album list');
+    if (!Array.isArray(list)) throw new Error('Invalid album list');
     for (const album of list) {
       if (!album.id || !album.title || ids.has(album.id)) throw new Error('Invalid album');
       ids.add(album.id);
@@ -71,9 +71,7 @@
   async function catalog() {
     if (albums) return albums;
     if (!catalogPromise) catalogPromise = (async () => {
-      const response = await fetch('assets/gallery/albums.json?v=20261121-12');
-      if (!response.ok) throw new Error('Cannot load albums');
-      const data = await response.json();
+      const data = await GalleryData.load();
       validateCatalog(data);
       albums = data; return albums;
     })().finally(() => { catalogPromise = null; });
@@ -138,7 +136,7 @@
     categoryList.hidden = true; room.hidden = false; $('gallery-back').hidden = false;
     $('gallery-title').textContent = selected.title;
     emptyAlbum.hidden = selected.items.length > 0; orbit.hidden = selected.items.length === 0;
-    updatePath();
+    updatePath(); manage();
     orbit.replaceChildren();
     cards = selected.items.map((item, index) => {
       const card = document.createElement('button'); card.type = 'button'; card.className = 'orbit-card';
@@ -155,7 +153,7 @@
       if (item.type === 'video') {
         const play = document.createElement('span'); play.className = 'media-play'; play.setAttribute('aria-hidden', 'true');
         play.innerHTML = '<svg viewBox="0 0 24 24"><path d="m9 5 10 7-10 7Z"/></svg>';
-        const length = document.createElement('span'); length.className = 'media-length'; length.textContent = duration(item.duration);
+        const length = document.createElement('span'); length.className = 'media-length'; length.textContent = Number.isFinite(item.duration) ? duration(item.duration) : '视频';
         card.append(play, length);
       }
       card.addEventListener('click', event => { if (dragged) { event.preventDefault(); return; } showMedia(index); });
@@ -174,7 +172,7 @@
     if (frame) cancelAnimationFrame(frame);
     frame = 0; selected = null; hovering = dragging = dragged = false;
     if (albums) renderCategories(focusId);
-    updatePath();
+    updatePath(); manage();
   }
   function back() {
     if (!room.hidden) { const focusId = selected?.id; categories(false, focusId); }
@@ -191,7 +189,8 @@
       image.src = item.src; image.alt = item.alt; lightbox.setAttribute('aria-label', '放大照片');
     }
     const label = selected.display === 'screenshot' ? item.alt : selected.title;
-    $('lightbox-caption').textContent = `${label} · ${mediaIndex + 1} / ${selected.items.length}`;
+    $('lightbox-caption').textContent = `${item.recordId ? item.alt : label} · ${mediaIndex + 1} / ${selected.items.length}`;
+    if (item.recordId) { const detail=document.createElement('a');detail.href=`record.html?kind=gallery&id=${encodeURIComponent(item.recordId)}`;detail.className='lightbox-detail-link';detail.textContent='查看记录';$('lightbox-caption').append(detail); }
     $('lightbox-prev').hidden = $('lightbox-next').hidden = selected.items.length < 2;
     if (!lightbox.open) lightbox.showModal();
     if (item.type === 'video') video.play().catch(() => {});
@@ -211,7 +210,9 @@
     try {
       await catalog(); renderCategories();
       if (requestedAlbum) {
-        const destination = findAlbum(requestedAlbum); requestedAlbum = null;
+        let destination = findAlbum(requestedAlbum);
+        if(!destination){await Memories.refresh();albums=null;await catalog();destination=findAlbum(requestedAlbum);}
+        requestedAlbum = null;
         if (destination) { ancestors = destination.parents; selectAlbum(destination.album.id); }
         else updatePath();
       }
@@ -222,6 +223,29 @@
       categoryList.replaceChildren(retry);
     } finally { categoryList.removeAttribute('aria-busy'); }
   }
+  const manageBar=$('gallery-manage-bar');
+  const createAlbum=document.createElement('button');createAlbum.type='button';createAlbum.className='quiet-button';createAlbum.textContent='＋ 新建相册';
+  const addMedia=document.createElement('a');addMedia.className='primary-button';addMedia.textContent='＋ 照片 / 视频';addMedia.hidden=true;
+  manageBar.prepend(createAlbum,addMedia);
+  const createDialog=document.createElement('dialog');createDialog.className='sync-dialog album-create-dialog';createDialog.setAttribute('aria-labelledby','album-create-title');
+  createDialog.innerHTML='<header class="sync-heading"><h2 id="album-create-title">新建相册</h2><button class="sync-close" type="button" aria-label="关闭新建相册">×</button></header><form><label for="new-album-title">名称</label><input id="new-album-title" maxlength="60" required autocomplete="off"><label for="new-album-folder" class="album-folder-label"><input id="new-album-folder" type="checkbox"> 创建分类，里面可以放子相册</label><p class="form-error" role="alert"></p><button class="primary-button" type="submit">创建</button></form>';
+  document.body.append(createDialog);
+  function manage(){createAlbum.hidden=!!selected;addMedia.hidden=!selected;if(selected)addMedia.href=`record.html?kind=gallery&album=${encodeURIComponent(selected.id)}&new=1`;}
+  createAlbum.addEventListener('click',()=>{$('new-album-title').value='';$('new-album-folder').checked=false;createDialog.querySelector('.form-error').textContent='';createDialog.querySelector('[type=submit]').textContent=GitHubSync.connected()?'创建并同步':'创建';createDialog.showModal();});
+  createDialog.querySelector('.sync-close').addEventListener('click',()=>createDialog.close());
+  createDialog.querySelector('form').addEventListener('submit',async event=>{
+    event.preventDefault();const submit=event.target.querySelector('[type=submit]');submit.disabled=true;
+    try{const row=await Memories.addAlbum($('new-album-title').value.trim(),ancestors[ancestors.length-1]?.id||'',$('new-album-folder').checked);createDialog.close();await reloadCatalog(row.id);if(GitHubSync.connected())GitHubSync.sync().catch(()=>{});}catch(error){createDialog.querySelector('.form-error').textContent=error.message;}finally{submit.disabled=false;}
+  });
+  let reloadTimer;
+  async function reloadCatalog(targetId){
+    const activeId=targetId||selected?.id||ancestors[ancestors.length-1]?.id;
+    if(catalogPromise)await catalogPromise;
+    albums=null;await catalog();const found=activeId?findAlbum(activeId):null;
+    if(found){ancestors=found.parents;selectAlbum(found.album.id);}else categories(true);
+  }
+  document.addEventListener('zengmin:content-changed',()=>{if(!gallery.open)return;clearTimeout(reloadTimer);reloadTimer=setTimeout(()=>reloadCatalog().catch(()=>{}),120);});
+  addEventListener('storage',event=>{if(event.key==='zengmin:records-changed'&&albums)reloadCatalog().catch(()=>{});});
   $('gallery-open')?.addEventListener('click', openGallery);
   document.addEventListener('open-gallery', openGallery);
   $('gallery-close').addEventListener('click', () => {

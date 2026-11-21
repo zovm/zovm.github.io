@@ -110,6 +110,8 @@
     const city = data.cities[index];
     $('city-name').textContent = city.name; $('city-province').textContent = city.province;
     $('city-position').textContent = `${index + 1} / ${data.cities.length}`;
+    $('city-memory-link').href = 'city.html?city=' + city.id;
+    $('city-memory-link').textContent = '收藏' + city.name + '的回忆';
     nodes.forEach((node, i) => {
       node.group.classList.toggle('is-current', i === index); node.group.classList.toggle('is-visited', i <= index);
       node.hit.setAttribute('aria-pressed', String(i === index));
