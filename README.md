@@ -53,3 +53,11 @@
 主页计时上方的 “time together forever” 使用本地提供的 [Great Vibes](https://github.com/google/fonts/tree/main/ofl/greatvibes) 花体字体，授权文件保存在 `assets/fonts/OFL.txt`。圣诞树开场不再显示底部的相机、音乐与重播控制栏；照相馆和歌单仍可从主页进入。
 
 开场的“进入主页”仅在树、灯光、环绕光、人物及标题动画完成，并且场景图片加载结束后淡入；重播会重新等待。开启减少动态效果时直接展示完成的场景，再显示入口。
+
+## 旅行轨迹与纪念日
+
+`travelM.html` 展示新余、南昌、长沙、上饶、衢州、绍兴、南京，按用户给出的顺序连线；支持逐站播放、暂停、重播、点击城市，以及全国视图和足迹放大。连线是城市间的示意，不代表真实道路或出游日期。
+
+地图边界和城市中心来自 [DataV.GeoAtlas](https://datav.aliyun.com/portal/school/atlas/area_selector)，原始边界接口为 `https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json`，城市行政区编码依次为 360500、360100、430100、361100、330800、330600、320100。本地化的向量数据位于 `assets/travel/map.json`，不依赖访问者连接地图服务，包含省级边界和南海诸岛附图。
+
+主页在相恋计时下方增加整行的周年纪念日倒计时。每年按北京时间 12 月 9 日零点计算周年，当天显示周年祝福，12 月 10 日切换至下一年。

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f9e6f1"><title>旅行轨迹 · 曾❤敏</title>
+  <link rel="icon" href="assets/star.svg"><script src="theme.js?v=20261121-11"></script>
+  <link rel="stylesheet" href="design.css?v=20261121-11"><link rel="stylesheet" href="navigation.css?v=20261121-11">
+  <link rel="stylesheet" href="travel.css?v=20261121-11">
+  <script src="travel.js?v=20261121-11" defer></script><script src="navigation.js?v=20261121-11" defer></script><script src="music.js?v=20261121-11" defer></script>
+</head><body data-page="travel">
+  <main class="travel-shell">
+    <header class="travel-heading"><div><h1>旅行轨迹</h1><p>曾❤敏 <span aria-hidden="true">·</span> 7 座城市</p></div><button class="quiet-button" id="map-mode" type="button" aria-pressed="false" disabled>放大足迹</button></header>
+    <section class="travel-map-panel" id="map-panel" aria-label="七城旅行地图" aria-busy="true">
+      <svg id="travel-map" class="travel-map" viewBox="0 0 1100 720" role="group" aria-label="新余、南昌、长沙、上饶、衢州、绍兴、南京的旅行连线"></svg>
+      <aside class="travel-city-card" id="travel-city-card" aria-live="polite" hidden><p id="city-province"></p><h2 id="city-name"></h2><span id="city-position"></span></aside>
+      <div class="travel-loading" id="travel-loading" role="status"><span id="map-status">正在展开地图…</span><button class="quiet-button" id="map-retry" type="button" hidden>重新加载</button></div>
+      <a class="map-attribution" href="https://datav.aliyun.com/portal/school/atlas/area_selector" target="_blank" rel="noopener noreferrer">地图数据：DataV</a>
+    </section>
+    <div class="travel-playback" role="group" aria-label="旅程播放控制"><button class="quiet-button" id="trip-prev" type="button" disabled>上一站</button><button class="primary-button" id="trip-play" type="button" disabled>播放旅程</button><button class="quiet-button" id="trip-next" type="button" disabled>下一站</button><button class="quiet-button" id="trip-replay" type="button" disabled>重播</button></div>
+    <nav class="travel-stops" id="travel-stops" aria-label="旅行城市"></nav>
+  </main>
+</body></html>
