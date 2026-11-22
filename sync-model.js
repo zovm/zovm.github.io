@@ -6,6 +6,20 @@
   const mimeExtensions = Object.assign(Object.create(null),{'image/jpeg':'jpg','image/png':'png','image/webp':'webp','video/mp4':'mp4','video/webm':'webm','video/quicktime':'mov'});
   const cities = Object.assign(Object.create(null),{'360500':'新余','360100':'南昌','430100':'长沙','361100':'上饶','330800':'衢州','330600':'绍兴','320100':'南京'});
   const kinds = ['daily','game','food','travel','gallery'];
+  const foodCategories = Object.assign(Object.create(null),{tea:'奶茶',food:'食物',drink:'饮料'});
+  // Keep food metadata in ordinary note lines so older clients and backups retain it.
+  function foodDetails(row) {
+    let note=String(row?.note||'').replace(/\r\n/g,'\n'),category='',brand='';
+    const header=/^类别：(奶茶|食物|饮料)(?:\n|$)/.exec(note);
+    if(header){category=Object.keys(foodCategories).find(key=>foodCategories[key]===header[1]);note=note.slice(header[0].length);}
+    const value=/^品牌：([^\n]{1,80})(?:\n|$)/.exec(note);if(value){brand=value[1];note=note.slice(value[0].length);}if(header||value)note=note.replace(/^\n/,'');
+    return {category,brand,note};
+  }
+  function foodNote(category,brand,note) {
+    const content=String(note||'').trim(),value=String(brand||'').trim().replace(/[\r\n]+/g,' ').slice(0,80);
+    const header=[foodCategories[category]?`类别：${foodCategories[category]}`:'',value?'品牌：'+value:''].filter(Boolean).join('\n');
+    return header+(header&&content?'\n\n':'')+content;
+  }
   const uid = () => globalThis.crypto.randomUUID();
   const text = (value, max) => String(value || '').slice(0, max);
   const validId = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,120}$/.test(value);
@@ -99,7 +113,7 @@
     result.updated = new Date(Math.max(Date.now(),Date.parse(result.updated)+1)).toISOString();
     return {manifest:manifest(result),acks,conflicts};
   }
-  const api = {FORMAT,MAX_FILE,mimeExtensions,cities,kinds,uid,validId,dateOK,record,album,media,empty,manifest,merge};
+  const api = {FORMAT,MAX_FILE,mimeExtensions,cities,kinds,foodCategories,foodDetails,foodNote,uid,validId,dateOK,record,album,media,empty,manifest,merge};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else globalThis.SyncModel = api;
 })();

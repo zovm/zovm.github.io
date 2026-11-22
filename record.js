@@ -15,7 +15,7 @@
   function today(){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());return ['year','month','day'].map(k=>p.find(v=>v.type===k).value).join('-');}
   function toast(text){clearTimeout(timer);$('journal-toast').textContent=text;$('journal-toast').classList.add('visible');timer=setTimeout(()=>$('journal-toast').classList.remove('visible'),4000);}
   function backLink(){
-    const url=travel?`city.html?city=${encodeURIComponent(row?.cityId||cityId)}`:gallery?`gallery.html?album=${encodeURIComponent(row?.albumId||albumId)}`:food?`foodM.html?type=${row?.foodType||'meal'}`:game?'gameM.html':'dailyM.html';
+    const url=travel?`city.html?city=${encodeURIComponent(row?.cityId||cityId)}`:gallery?`gallery.html?album=${encodeURIComponent(row?.albumId||albumId)}`:food?`foodM.html?type=${row?.foodType||params.get('type')||'meal'}`:game?'gameM.html':'dailyM.html';
     $('back-records').href=url;$('back-records').textContent=travel?SyncModel.cities[row?.cityId||cityId]||'旅行轨迹':gallery?'照相馆':food?'foodM':game?'gameM':'dailyM';
   }
   function state(){saveLocal.hidden=!GitHubSync.connected();$('save-record').textContent=GitHubSync.connected()?'保存并同步':'保存到本地';$('save-record').disabled=saveLocal.disabled=busy||GitHubSync.busy();}
@@ -24,9 +24,10 @@
   async function show(){
     backLink();$('record-form').hidden=true;$('record-view').hidden=false;$('edit-record').hidden=false;$('delete-record').hidden=false;
     $('detail-title').textContent=row.title;document.title=`${row.title} · 曾❤敏`;
-    $('detail-meta').textContent=row.date.replaceAll('-','.')+(travel?' · '+SyncModel.cities[row.cityId]:food?` · ${{meal:'每日饮食',favorite:'喜欢吃的',avoid:'忌口'}[row.foodType]} · ${row.person}${row.foodType==='meal'?' · '+row.meal:''}`:game?` · ${row.duration} 分钟`:gallery?'':` · ${row.mood}`);
-    $('detail-game').hidden=!(game||food);$('detail-game').textContent=food?row.foodName:row.gameName;
-    $('detail-body').replaceChildren();for(const text of row.note.split(/\n\s*\n/)){if(!text.trim())continue;const p=document.createElement('p');p.textContent=text;$('detail-body').append(p);}
+    const details=food?SyncModel.foodDetails(row):null;
+    $('detail-meta').textContent=(food&&row.foodType!=='meal'?'收录于 ':'')+row.date.replaceAll('-','.')+(travel?' · '+SyncModel.cities[row.cityId]:food?` · ${{meal:'每日饮食',favorite:'喜欢的',avoid:'不喜欢／忌口'}[row.foodType]} · ${row.person}${row.foodType==='meal'?' · '+row.meal:''}`:game?` · ${row.duration} 分钟`:gallery?'':` · ${row.mood}`);
+    $('detail-game').hidden=!(game||food);$('detail-game').textContent=food?[row.foodName&&row.foodName!==row.title?row.foodName:'',SyncModel.foodCategories[details.category]||'',details.brand].filter(Boolean).join(' · '):row.gameName;
+    $('detail-body').replaceChildren();for(const text of (food?details.note:row.note).split(/\n\s*\n/)){if(!text.trim())continue;const p=document.createElement('p');p.textContent=text;$('detail-body').append(p);}
     photos=[...row.imageIds];$('detail-photos').replaceChildren();
     for(const [index,photoId]of photos.entries()){
       const media=await source(photoId);if(!media)continue;const button=document.createElement('button');button.type='button';button.className='detail-photo';button.setAttribute('aria-label',`${media.type==='video'?'播放视频':'放大照片'} ${index+1}`);button.append(thumb(media,row.title));
@@ -45,9 +46,12 @@
     additions=[];photos=[...(row?.imageIds||[])];dirty=false;backLink();$('record-view').hidden=true;$('record-form').hidden=false;$('edit-record').hidden=true;$('delete-record').hidden=true;
     $('editor-title').textContent=row?'编辑记录':travel?'收藏这一程':gallery?'添加相册回忆':food?'记录食物':game?'记一场游戏':'记录今天';
     $('record-title').value=row?.title||'';$('record-game-name').value=row?.gameName||'';$('record-date').value=row?.date||today();$('record-mood').value=row?.mood||'晴朗';$('record-duration').value=String(row?.duration??60);$('record-note').value=row?.note||'';$('record-error').textContent='';
-    $('record-food-type').value=row?.foodType||(['meal','favorite','avoid'].includes(params.get('type'))?params.get('type'):'meal');$('record-food-name').value=row?.foodName||'';$('record-person').value=row?.person||'我们';$('record-meal').value=row?.meal||'午餐';$('meal-field').hidden=$('record-food-type').value!=='meal';citySelect.value=row?.cityId||cityId;await renderEditor();state();
+    $('record-food-type').value=row?.foodType||(['meal','favorite','avoid'].includes(params.get('type'))?params.get('type'):'meal');$('record-food-name').value=row?.foodName||'';$('record-person').value=row?.person||'我们';$('record-meal').value=row?.meal||'午餐';
+    if(food){const details=SyncModel.foodDetails(row);$('record-food-category').value=row?details.category:(SyncModel.foodCategories[params.get('category')]?params.get('category'):'food');$('record-food-brand').value=details.brand;$('record-note').value=details.note;}
+    updateFoodDate();citySelect.value=row?.cityId||cityId;await renderEditor();state();
   }
-  $('record-food-type').addEventListener('change',()=>{$('meal-field').hidden=$('record-food-type').value!=='meal';});
+  function updateFoodDate(){$('meal-field').hidden=$('record-food-type').value!=='meal';$('record-date-label').textContent=food&&$('record-food-type').value!=='meal'?'收录日期':'日期';}
+  $('record-food-type').addEventListener('change',updateFoodDate);
   $('record-files').addEventListener('change',async event=>{
     const files=[...(event.target.files||[])];if(!files.length)return;
     if(photos.length+files.length>20){$('record-error').textContent='每条记录最多添加 20 个照片或视频';event.target.value='';return;}
@@ -60,10 +64,10 @@
   $('record-form').addEventListener('input',()=>{dirty=true;});
   $('record-form').addEventListener('submit',async event=>{
     event.preventDefault();if(busy||GitHubSync.busy())return;
-    const title=$('record-title').value.trim(),note=$('record-note').value.trim(),gameName=$('record-game-name').value.trim();
-    if(!title||(!note&&!photos.length)||(game&&!gameName)){$('record-error').textContent='请填写标题，并添加正文、照片或视频';return;}
+    const title=$('record-title').value.trim(),content=$('record-note').value.trim(),note=food?SyncModel.foodNote($('record-food-category').value,$('record-food-brand').value,content):content,gameName=$('record-game-name').value.trim();
+    if(!title||(!food&&!note&&!photos.length)||(game&&!gameName)){$('record-error').textContent='请填写标题，并添加正文、照片或视频';return;}
     const publish=GitHubSync.connected()&&event.submitter!==saveLocal;
-    const value={id:row?.id||Memories.uid(),_rev:row?._rev,kind,title,note,gameName,date:$('record-date').value,mood:$('record-mood').value,duration:game?Number($('record-duration').value):0,foodType:$('record-food-type').value,foodName:$('record-food-name').value.trim(),person:$('record-person').value,meal:$('record-meal').value,cityId:citySelect.value,albumId:row?.albumId||albumId,imageIds:[...photos]};
+    const value={id:row?.id||Memories.uid(),_rev:row?._rev,kind,title,note,gameName,date:$('record-date').value,mood:$('record-mood').value,duration:game?Number($('record-duration').value):0,foodType:$('record-food-type').value,foodName:$('record-food-name').value.trim()||(food?title:''),person:$('record-person').value,meal:$('record-meal').value,cityId:citySelect.value,albumId:row?.albumId||albumId,imageIds:[...photos]};
     busy=true;state();
     try{
       const keep=new Set(photos);for(const photo of additions)if(keep.has(photo.id)&&photo.posterId)keep.add(photo.posterId);
