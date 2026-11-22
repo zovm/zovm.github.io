@@ -140,6 +140,20 @@
         "poster": "assets/gallery/video-01-poster.webp",
         "alt": "一起收藏的片段",
         "duration": 13.07
+      },
+      {
+        "type": "video",
+        "src": "assets/gallery/video-02.mp4",
+        "poster": "assets/gallery/video-02-poster.webp",
+        "alt": "一起收藏的片段",
+        "duration": 14.87
+      },
+      {
+        "type": "video",
+        "src": "assets/gallery/video-03.mp4",
+        "poster": "assets/gallery/video-03-poster.webp",
+        "alt": "一起收藏的片段",
+        "duration": 14.87
       }
     ]
   },

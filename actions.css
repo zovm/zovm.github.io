@@ -8,7 +8,7 @@
 .action-panel :is(button,a,label[for]):hover{background:var(--accent-wash);color:var(--accent-strong)}
 .action-panel .primary-button{background:linear-gradient(115deg,var(--accent),var(--accent-strong));color:#fff}.action-panel .primary-button:hover{background:var(--accent-strong);color:#fff}
 .action-panel .sync-controls,.action-panel .action-backups{margin-top:9px;padding-top:9px;border-top:1px solid var(--accent-wash)}
-.action-panel .sync-account-button{max-width:none;overflow:visible;text-overflow:clip}.action-panel .sync-publish-button{background:var(--accent-wash)!important;color:var(--accent-strong)!important}.action-panel button:disabled{opacity:.55;cursor:wait}
+.action-panel .sync-account-button{max-width:none;overflow:visible;text-overflow:clip}.action-panel button:disabled{opacity:.55;cursor:wait}
 .action-toast{position:fixed;left:50%;bottom:104px;z-index:180;transform:translate(-50%,10px);width:max-content;max-width:calc(100% - 40px);padding:13px 20px;border:1px solid var(--line);border-radius:17px;background:var(--panel-solid);box-shadow:var(--shadow);color:var(--accent-strong);font:14px/1.7 var(--sans);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}.action-toast.visible{opacity:1;transform:translate(-50%,0)}
 .city-memory-actions{display:flex;flex-direction:column;gap:9px;margin-top:16px}.city-memory-actions .city-memory-link{margin:0;pointer-events:auto}.city-memory-actions .city-add-memory{border-color:transparent;background:var(--accent);color:#fff}.city-memory-actions .city-add-memory:hover{background:var(--accent-strong)}
 @keyframes actions-in{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}

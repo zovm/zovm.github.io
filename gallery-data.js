@@ -2,7 +2,7 @@
   'use strict';
   let base;
   async function load() {
-    if(!base){const response=await fetch('assets/gallery/albums.json?v=20261121-13');if(!response.ok)throw new Error('相册暂时无法读取');base=await response.json();}
+    if(!base){const response=await fetch('assets/gallery/albums.json?v=20261122-15');if(!response.ok)throw new Error('相册暂时无法读取');base=await response.json();}
     const result=structuredClone(base),map=new Map();
     const index=list=>{for(const row of list){map.set(row.id,row);if(row.children)index(row.children);}};index(result);
     const [folders,records]=await Promise.all([Memories.albums(),Memories.list('gallery')]);
