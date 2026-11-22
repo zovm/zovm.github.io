@@ -1,6 +1,11 @@
 (() => {
   const $=id=>document.getElementById(id),mode=document.body.dataset.journal,game=mode==='game',food=mode==='food',travel=mode==='travel',cityId=new URLSearchParams(location.search).get('city')||'360500';let rows=[],version=0,timer,foodType=['meal','favorite','avoid'].includes(new URLSearchParams(location.search).get('type'))?new URLSearchParams(location.search).get('type'):(food?'favorite':'meal');
-  if(travel){const name=SyncModel.cities[cityId];if(!name){location.replace('travelM.html');return;}document.title=name+' · 曾❤敏';$('city-title').textContent=name;$('new-record').href=`record.html?kind=travel&city=${cityId}&new=1`;}
+  if(travel){
+    const name=SyncModel.cities[cityId];if(!name){location.replace('travelM.html');return;}
+    document.title=name+'的回忆 · 曾❤敏';$('city-title').textContent=name+'的回忆';$('new-record').href=`record.html?kind=travel&city=${cityId}&new=1`;
+    const poem=window.CityPoems?.[cityId],heading=$('city-poem');
+    if(poem&&heading){heading.replaceChildren();for(const [index,line]of poem.lines.entries()){if(index)heading.append(document.createElement('wbr'));const span=document.createElement('span');span.className='poem-line';span.textContent=line;heading.append(span);}heading.title=poem.author+'《'+poem.work+'》';}
+  }
   const labels={meal:'每日饮食',favorite:'喜欢的',avoid:'不喜欢／忌口'};
   let foodCategory='';
   const localDay=()=>{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());return ['year','month','day'].map(k=>p.find(v=>v.type===k).value).join('-');};

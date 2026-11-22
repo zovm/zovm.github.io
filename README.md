@@ -24,7 +24,15 @@
 | dailyM · 情侣相伴 | 愿我如星君如月，夜夜流光相皎洁。 | [范成大《车遥遥篇》](https://zh.wikisource.org/zh-hans/車遙遙篇_%28范成大%29) |
 | gameM · 尽兴同游 | 兴尽晚回舟，误入藕花深处。 | [李清照《如梦令·常记溪亭日暮》](https://www.gushiwen.cn/mingju/juv_207f9b9765c9.aspx) |
 | foodM · 食物与滋味 | 人间有味是清欢。 | [苏轼《浣溪沙》](https://zh.wikisource.org/zh-hans/浣溪沙（元豐七年十月二十四日，從泗州劉倩叔遊南山）) |
-| 城市旅行回忆 · 山水行游 | 五岳寻仙不辞远，一生好入名山游。 | [李白《庐山谣寄卢侍御虚舟》](https://zh.wikisource.org/zh-hans/廬山謠寄盧侍御虛舟) |
+| 新余的回忆 | 稚杉绕麓千旗卷，野水涵空一鉴开。 | [朱熹《新喻西境》](https://www.shidianguji.com/zh/mingju/7624425627111047208) |
+| 南昌的回忆 | 落霞与孤鹜齐飞，秋水共长天一色。 | [王勃《滕王阁序》](https://gzw.nc.gov.cn/ncsgzw/gzdt/202606/ea6eab84f6054b12859b010d15bc72b1.shtml) |
+| 长沙的回忆 | 独立寒秋，湘江北去，橘子洲头。 | [毛泽东《沁园春·长沙》](https://m.gushiwen.cn/mingju/juv_c2d019fd784c.aspx) |
+| 上饶的回忆 | 稻花香里说丰年，听取蛙声一片。 | [辛弃疾《西江月·夜行黄沙道中》](https://paper.people.com.cn/rmrb/images/2024-09/07/06/rmrb2024090706.pdf) |
+| 衢州的回忆 | 梅子黄时日日晴，小溪泛尽却山行。 | [曾几《三衢道中》](https://zjnews.zjol.com.cn/05zjnews/system/2009/08/23/015768290.shtml) |
+| 绍兴的回忆 | 山重水复疑无路，柳暗花明又一村。 | [陆游《游山西村》](https://zjrb.zjol.com.cn/html/2021-10/12/content_3480742.htm?div=-1) |
+| 南京的回忆 | 烟笼寒水月笼沙，夜泊秦淮近酒家。 | [杜牧《泊秦淮》](https://www.njqh.gov.cn/dmqh/yzqh/qhhssylx/) |
+
+城市诗文由 `city-poems.js` 按城市编码选择，显示在“某城的回忆”下方。悬停诗句可查看作者及篇名，回忆正文与媒体不受影响。新余选取直接题咏新喻的诗；上饶对应黄沙道，衢州对应三衢，绍兴对应山西村，南京对应秦淮河。
 
 “同步”菜单项采用与其他普通操作相同的背景与文字颜色，仅悬停时显示主题色底色。
 
