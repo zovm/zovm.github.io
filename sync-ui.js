@@ -15,6 +15,8 @@
     <details class="sync-backup"><summary>本地备份</summary><div><button class="quiet-button" id="backup-all" type="button">导出全部</button><label class="quiet-button" for="restore-all">导入备份</label><input id="restore-all" type="file" accept=".json,application/json" hidden></div></details>`;
   document.body.append(dialog);
   const $=id=>document.getElementById(id),buttons=[];
+  let actionHub=null,actionPanel=null,actionToggle=null,actionBadge=null,backupBusy=false,backupTimer;
+  const quickBackupButtons=[];
   const labels={daily:'dailyM',game:'gameM',food:'foodM',gallery:'照相馆',travel:'旅行'};
   const makeButton=(label,action)=>{const button=document.createElement('button');button.type='button';button.className='quiet-button';button.textContent=label;button.addEventListener('click',action);return button;};
   function addControls(container) {
@@ -23,10 +25,49 @@
     account.classList.add('sync-account-button');sync.classList.add('sync-publish-button');controls.append(account,sync);container.append(controls);buttons.push({account,sync});
   }
   const toolbar=document.querySelector('.journal-toolbar,.record-top-actions');
-  if(toolbar)addControls(toolbar);
   const gallery=document.getElementById('gallery-dialog');
-  if(gallery){const bar=document.createElement('div');bar.className='gallery-manage-bar';bar.id='gallery-manage-bar';gallery.querySelector('.gallery-header').after(bar);addControls(bar);}
-  if(document.body.dataset.page==='travel'){const bar=document.createElement('div');bar.className='travel-manage-bar';document.querySelector('.travel-heading').after(bar);addControls(bar);}
+  const travel=document.body.dataset.page==='travel';
+  if(toolbar||gallery||travel){
+    actionHub=document.createElement('div');actionHub.className='action-hub';actionHub.id='page-actions';
+    actionToggle=document.createElement('button');actionToggle.type='button';actionToggle.className='action-toggle';actionToggle.id='action-toggle';actionToggle.setAttribute('aria-expanded','false');actionToggle.setAttribute('aria-controls','action-panel');actionToggle.setAttribute('aria-label','展开操作菜单');
+    actionToggle.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg>';
+    actionBadge=document.createElement('span');actionBadge.className='action-badge';actionBadge.hidden=true;actionBadge.setAttribute('aria-hidden','true');actionToggle.append(actionBadge);
+    actionPanel=document.createElement('section');actionPanel.className='action-panel';actionPanel.id='action-panel';actionPanel.hidden=true;actionPanel.setAttribute('aria-label','页面操作');
+    let content;
+    if(toolbar){content=toolbar;addControls(content);}
+    else if(gallery){content=document.createElement('div');content.className='gallery-manage-bar';content.id='gallery-manage-bar';addControls(content);}
+    else{
+      content=document.createElement('div');content.className='travel-actions';
+      const add=document.createElement('a');add.id='travel-add-memory';add.className='primary-button';add.href='record.html?kind=travel&city=360500&new=1';add.textContent='在新余添加回忆';
+      const view=document.createElement('a');view.id='travel-open-memories';view.className='quiet-button';view.href='city.html?city=360500';view.textContent='查看新余回忆';
+      content.append(add,view);addControls(content);
+    }
+    actionPanel.append(content);actionHub.append(actionToggle,actionPanel);(gallery||document.body).append(actionHub);
+    actionToggle.addEventListener('click',()=>setActions(actionPanel.hidden));
+    actionToggle.addEventListener('keydown',event=>{
+      if(!['ArrowDown','ArrowUp'].includes(event.key))return;event.preventDefault();setActions(true);
+      const items=actionItems();(event.key==='ArrowUp'?items.at(-1):items[0])?.focus();
+    });
+    actionPanel.addEventListener('click',event=>{const control=event.target.closest('a,button');if(control)setActions(false);});
+    actionPanel.addEventListener('change',event=>{if(event.target.type==='file')setActions(false);});
+    document.addEventListener('pointerdown',event=>{if(!actionPanel.hidden&&!actionHub.contains(event.target))setActions(false);});
+    document.addEventListener('focusin',event=>{if(!actionPanel.hidden&&!actionHub.contains(event.target))setActions(false);});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!actionPanel.hidden){event.preventDefault();event.stopPropagation();setActions(false,true);}},true);
+    gallery?.addEventListener('close',()=>setActions(false));
+  }
+  function actionItems(){return [...actionPanel.querySelectorAll('a[href],button,label[for]')].filter(element=>!element.disabled&&!element.closest('[hidden]'));}
+  function setActions(expanded,restoreFocus=false){
+    if(!actionPanel)return;actionPanel.hidden=!expanded;actionHub.classList.toggle('is-open',expanded);actionToggle.setAttribute('aria-expanded',String(expanded));actionToggle.setAttribute('aria-label',expanded?'收起操作菜单':count?`展开操作菜单，${count} 项待同步`:'展开操作菜单');
+    if(restoreFocus)actionToggle.focus();if(expanded)document.dispatchEvent(new Event('zengmin:actions-open'));
+  }
+  function addBackupControls(){
+    if(!actionPanel)return;
+    const actions=document.createElement('div');actions.className='action-backups';
+    const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.hidden=true;input.id='quick-restore-all';input.addEventListener('change',importAll);
+    const exportButton=makeButton('导出备份',exportAll),importButton=makeButton('导入备份',()=>input.click());
+    quickBackupButtons.push(exportButton,importButton);actions.append(exportButton,importButton,input);actionPanel.append(actions);
+  }
+  if(actionPanel&&!document.getElementById('export-records'))addBackupControls();
   const nav=document.querySelector('#nav-drawer nav');
   if(nav){const button=makeButton('GitHub · 账号与同步',()=>{document.getElementById('nav-drawer').close();open();});button.className='drawer-account';nav.after(button);}
   function message(text,error=false){$('sync-message').textContent=text;$('sync-message').classList.toggle('is-error',error);}
@@ -36,7 +77,8 @@
     $('github-connect-form').hidden=!!session;$('github-disconnect').hidden=!session;
     $('github-disconnect').disabled=busy;$('publish-memories').disabled=busy;
     $('publish-memories').textContent=busy?'同步中…':session?(count?'同步到网站':'获取网站最新内容'):'连接后同步';
-    $('backup-all').disabled=busy;
+    $('backup-all').disabled=busy||backupBusy;for(const button of quickBackupButtons)button.disabled=busy||backupBusy;
+    if(actionBadge){actionBadge.hidden=!count;actionBadge.textContent=count>99?'99+':String(count);if(actionPanel.hidden)actionToggle.setAttribute('aria-label',count?`展开操作菜单，${count} 项待同步`:'展开操作菜单');}
     document.dispatchEvent(new CustomEvent('zengmin:account-changed',{detail:{connected:!!session,busy}}));
   }
   async function refresh(){
@@ -51,7 +93,7 @@
       if(!count){const li=document.createElement('li');li.textContent='没有待同步的内容';$('sync-pending-list').append(li);}state();
     }catch{message('本地记录暂时无法读取，请检查浏览器存储权限。',true);}finally{refreshing=false;}
   }
-  async function open(){await refresh();if(!dialog.open)dialog.showModal();}
+  async function open(){setActions(false);await refresh();if(!dialog.open)dialog.showModal();}
   async function connect(event){
     event.preventDefault();const token=$('github-token').value.trim();
     if(!/^(github_pat_|ghp_)[A-Za-z0-9_]+$/.test(token)){message('请粘贴 GitHub 生成的授权令牌。',true);return;}
@@ -65,7 +107,7 @@
   async function runSync(){
     if(busy)throw new Error('正在同步，请稍候');
     if(!session){await open();$('github-token').focus();throw new Error('请先连接 GitHub。内容已保存在本地。');}
-    busy=true;state();if(!dialog.open)dialog.showModal();message('正在读取网站最新内容…');
+    busy=true;setActions(false);state();if(!dialog.open)dialog.showModal();message('正在读取网站最新内容…');
     try {
       const action=async()=>new SyncClient(session.token).publish({pending:await Memories.pending(),asset:Memories.image,apply:Memories.applyRemote,progress:message});
       const result=navigator.locks?await navigator.locks.request('zengmin-github-sync',{ifAvailable:true},lock=>{if(!lock)throw new Error('另一个标签页正在同步，请稍后重试。');return action();}):await action();
@@ -81,10 +123,24 @@
   $('publish-memories').addEventListener('click',()=>{if(!session){$('github-token').focus();message('先完成上方 GitHub 授权，再粘贴令牌连接。');}else runSync().catch(()=>{});});
   $('github-disconnect').addEventListener('click',()=>{session=null;try{sessionStorage.removeItem(KEY);}catch{}message('已退出连接，本地回忆已保留。');state();});
   dialog.querySelector('.sync-close').addEventListener('click',()=>dialog.close());
-  $('backup-all').addEventListener('click',async()=>{const button=$('backup-all');button.disabled=true;message('正在整理本地备份…');try{const data=await Memories.backup(),url=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='ZengMin-memories-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);message('已导出全部回忆。');}catch(error){message(error.message,true);}finally{button.disabled=false;}});
-  $('restore-all').addEventListener('change',async event=>{const file=event.target.files?.[0];if(!file)return;try{if(file.size>220*1024*1024)throw new Error('备份超过 220 MB，请使用分页面备份');const count=await Memories.restore(JSON.parse(await file.text()));message(`已导入 ${count} 条记录。`);await refresh();}catch(error){message(error.message,true);}finally{event.target.value='';}});
+  function backupMessage(text,error=false){
+    if(dialog.open){message(text,error);return;}
+    let toast=$('action-toast');if(!toast){toast=document.createElement('div');toast.id='action-toast';toast.className='action-toast';toast.setAttribute('role','status');(gallery||document.body).append(toast);}
+    clearTimeout(backupTimer);toast.textContent=text;toast.classList.add('visible');backupTimer=setTimeout(()=>toast.classList.remove('visible'),error?6500:4000);
+  }
+  function backupState(value){backupBusy=value;$('backup-all').disabled=value||busy;for(const button of quickBackupButtons)button.disabled=value||busy;}
+  async function exportAll(){
+    if(backupBusy)return;backupState(true);backupMessage('正在整理本地备份…');
+    try{const data=await Memories.backup(),url=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='ZengMin-memories-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);backupMessage('已导出全部回忆。');}catch(error){backupMessage(error.message,true);}finally{backupState(false);}
+  }
+  async function importAll(event){
+    const file=event.target.files?.[0];if(!file||backupBusy)return;backupState(true);
+    try{if(file.size>220*1024*1024)throw new Error('备份超过 220 MB，请使用分页面备份');const count=await Memories.restore(JSON.parse(await file.text()));backupMessage(`已导入 ${count} 条记录。`);await refresh();}catch(error){backupMessage(error.message,true);}finally{event.target.value='';backupState(false);}
+  }
+  $('backup-all').addEventListener('click',exportAll);
+  $('restore-all').addEventListener('change',importAll);
   document.addEventListener('zengmin:content-changed',refresh);
-  document.addEventListener('zengmin:storage-blocked',()=>{open();message('请关闭其他打开此网站的旧标签页，再刷新当前页面。',true);});
+  document.addEventListener('zengmin:storage-blocked',()=>{setActions(false);if(!dialog.open)dialog.showModal();message('请关闭其他打开此网站的旧标签页，再刷新当前页面。',true);});
   addEventListener('storage',event=>{if(event.key==='zengmin:records-changed')refresh();});
   window.GitHubSync={open,sync:runSync,connected:()=>!!session,busy:()=>busy};
   refresh();

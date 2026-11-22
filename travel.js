@@ -111,13 +111,23 @@
     $('city-name').textContent = city.name; $('city-province').textContent = city.province;
     $('city-position').textContent = `${index + 1} / ${data.cities.length}`;
     $('city-memory-link').href = 'city.html?city=' + city.id;
-    $('city-memory-link').textContent = '收藏' + city.name + '的回忆';
+    $('city-memory-link').textContent = '查看回忆';
+    $('city-add-memory-link').href = `record.html?kind=travel&city=${city.id}&new=1`;
+    $('travel-add-memory').href = $('city-add-memory-link').href;
+    $('travel-add-memory').textContent = '在' + city.name + '添加回忆';
+    $('travel-open-memories').href = $('city-memory-link').href;
+    $('travel-open-memories').textContent = '查看' + city.name + '回忆';
     nodes.forEach((node, i) => {
       node.group.classList.toggle('is-current', i === index); node.group.classList.toggle('is-visited', i <= index);
       node.hit.setAttribute('aria-pressed', String(i === index));
       stopButtons[i].setAttribute('aria-pressed', String(i === index));
       stopButtons[i].classList.toggle('is-visited', i <= index);
     });
+    const stops=$('travel-stops');
+    if(stops.scrollWidth>stops.clientWidth){
+      const active=stopButtons[index],left=active.offsetLeft,right=left+active.offsetWidth;
+      if(left<stops.scrollLeft||right>stops.scrollLeft+stops.clientWidth)stops.scrollTo({left:Math.max(0,left-(stops.clientWidth-active.offsetWidth)/2),behavior:reduced.matches?'auto':'smooth'});
+    }
     svg.querySelectorAll('.map-province').forEach(path => path.classList.toggle('is-current-province', path.dataset.code === city.provinceCode));
     moveProgress(targets[index], animate); controls();
   }
@@ -207,5 +217,8 @@
   new ResizeObserver(() => { if (data) frameMap(false); }).observe($('map-panel'));
   reduced.addEventListener('change', () => { pause(); if (data) { frameMap(false); moveProgress(targets[index], false); } });
   document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+  document.addEventListener('zengmin:actions-open',pause);
+  $('travel-city-card').addEventListener('pointerenter',pause);
+  $('travel-city-card').addEventListener('focusin',pause);
   addEventListener('pagehide', pause); load();
 })();

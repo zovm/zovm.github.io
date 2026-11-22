@@ -11,7 +11,7 @@
   }
   clock();setInterval(clock,1000);
   function entryReady(ready){$('enter-home').hidden=!ready;$('enter-home').disabled=!ready;cover.classList.toggle('entry-ready',ready);cover.setAttribute('aria-busy',String(!ready));}
-  function showCover(){entryReady(false);frame.src='welcome.html?embedded=1&v=20261121-13';cover.hidden=false;document.body.classList.add('cover-open');frame.focus();}
+  function showCover(){entryReady(false);frame.src='welcome.html?embedded=1&v=20261122-14';cover.hidden=false;document.body.classList.add('cover-open');frame.focus();}
   function enter(){if($('enter-home').disabled)return;try{sessionStorage.setItem('zengmin:entered','1');}catch{}cover.classList.add('leaving');setTimeout(()=>{cover.hidden=true;cover.classList.remove('leaving');frame.src='about:blank';document.body.classList.remove('cover-open');$('heart-button').focus();},matchMedia('(prefers-reduced-motion: reduce)').matches?0:650);}
   $('enter-home').addEventListener('click',enter);$('replay-cover').addEventListener('click',showCover);
   addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==frame.contentWindow||cover.hidden)return;if(event.data?.type==='winter:ready')entryReady(true);else if(event.data?.type==='winter:building')entryReady(false);else if(event.data?.type==='winter:enter')enter();});
